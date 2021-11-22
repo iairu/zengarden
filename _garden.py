@@ -2,9 +2,19 @@ from random import randint, random
 from termcolor import colored
 
 class Garden:
-    def __init__(self, side: int, garden: list):
+    def _getCount_(self, fieldContent: str):
+        count = 0
+        for row in self.garden:
+            for elm in row:
+                if (elm == fieldContent):
+                    count += 1
+        return count
+
+    def __init__(self, side: int, garden: list, pebbleCount: int = -1):
         self.side = side
         self.garden = garden
+        self.pebbleCount = self._getCount_("X") if (pebbleCount < 0) else pebbleCount
+        
 
     def print(self):
         # Available text colors:
@@ -59,6 +69,16 @@ class GardenUtils:
                 garden[row][col] = "X"
 
         return Garden(side, garden)
+
+    def copy(_garden: Garden):
+        gardenCopy = []
+        for row in _garden.garden:
+            rowCopy = []
+            for elm in row:
+                rowCopy.append(str(elm));
+            gardenCopy.append(rowCopy)
+        
+        return Garden(_garden.side, gardenCopy, _garden.pebbleCount)
 
     # ---------------------------
 
