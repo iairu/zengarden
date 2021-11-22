@@ -287,7 +287,20 @@ class Monk:
                 print("Monk failed after " + str(steps) + " steps, " + str(rotations) + " rotations, encircled in " + str(turns) + "th round.")
                 print("Fitness: " + str(self.fitness))
 
-        return [success, garden]
+        # Determine whether:
+        # 0 - collided (no success)
+        # 1 - didn't colide (some success)
+        # 2 - traversed every field (full success)
+        # todo: 3 NYI - 2 and significantly lowered rotation count
+        successLevel = 2 if (success) else 0
+        if (successLevel == 2):
+            for row in garden.garden:
+                for elm in row:
+                    if (elm == "0"):
+                        successLevel = 1
+                        break
+
+        return [successLevel, garden]
 
     def printGenes(self, newLineEvery: int = 10, padding: int = 2): # color direction genes
         directionGenesStart = len(self.genes) - directionCount

@@ -9,17 +9,28 @@ def main():
     size = [20, 5]
     garden = GardenUtils.load("map_samples/" + str(size[0]) + "x" + str(size[1]) + "/1")
     garden.print()
-    Evolution(  garden = garden,
-                populationCount = 10,
-                fitnessStepOverRotWeight = 2,
-                mutationChance = 0,
-                crossPosition = 0,
-                idealisticGenes = True,
-                elitism = 0.1,
-                gardenStepPrint = False,
-                detailStepPrint = False,
-                solutionPrint = True,
-                elitismFitnessRecalcPrint = True)
+    evo = Evolution(garden = garden,
+                    populationCount = 50,
+                    fitnessStepOverRotWeight = 2,
+                    mutationChance = 0,
+                    crossPosition = 0,
+                    idealisticGenes = True,
+                    elitism = 0.1,
+                    gardenStepPrint = False,
+                    detailStepPrint = False,
+                    solutionPrint = False,
+                    elitismFitnessRecalcPrint = False)
+
+    evo.evolve()
+    evo.evolve()
+    evo.evolve()
+    evo.evolve()
+    evo.evolve()
+    evo.evolve()
+    evo.evolve()
+    evo.evolve()
+    evo.evolve()
+    evo.successPrint(2)
 
 
     # monk1 = Monk(size)
