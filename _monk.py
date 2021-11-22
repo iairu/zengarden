@@ -65,7 +65,7 @@ class Monk:
     # ---------------------------
 
     def __init__(self, mapSize_or_parent1: int | Monk, parent2: Monk | None = None, mutationChance: float = 0, crossPosition: int = 0) -> None:
-        self.mapSize = 0
+        self.mapSize = [0, 0]
         self.mapEntranceCount = 0
         self.genes = [] # mapEntranceCount * Entrance genes, 4 * Rotation genes
         self.fitness = 0 # exploration result: number of steps + mapSize * mapSize - number of rotations
@@ -77,16 +77,16 @@ class Monk:
         self.exploreDetailStepPrint = False
 
         # Determine how to generate this Monk's chromozome based on whether he has parents or not
-        if isinstance(mapSize_or_parent1, int):
+        if isinstance(mapSize_or_parent1, list):
             # first generation (no parents): use random gene values
             self.mapSize = mapSize_or_parent1
-            self.mapEntranceCount = self.mapSize * 4
+            self.mapEntranceCount = (self.mapSize[0] + self.mapSize[1]) * 2
             self._randomGenes_()
 
         elif (isinstance(mapSize_or_parent1, Monk) and isinstance(parent2, Monk)):
             parent1 = mapSize_or_parent1
             self.mapSize = parent1.mapSize # assuming both parents are compatible with this map size
-            self.mapEntranceCount = self.mapSize * 4
+            self.mapEntranceCount = (self.mapSize[0] + self.mapSize[1]) * 2
             self._crossMutate_(parent1, parent2, mutationChance, crossPosition)
 
         return
@@ -102,12 +102,12 @@ class Monk:
             if (leftBeforeRight):
                 if (x - 1 >= 0 and garden[y][x-1] == "0"):
                     return "left"
-                elif (x + 1 < self.mapSize and garden[y][x+1] == "0"):
+                elif (x + 1 < self.mapSize[0] and garden[y][x+1] == "0"):
                     return "right"
                 else:
                     encircled = True
             else:
-                if (x + 1 < self.mapSize and garden[y][x+1] == "0"):
+                if (x + 1 < self.mapSize[0] and garden[y][x+1] == "0"):
                     return "right"
                 elif (x - 1 >= 0 and garden[y][x-1] == "0"):
                     return "left"
@@ -118,12 +118,12 @@ class Monk:
             if (upBeforeDown):
                 if (y - 1 >= 0 and garden[y-1][x] == "0"):
                     return "up"
-                elif (y + 1 < self.mapSize and garden[y+1][x] == "0"):
+                elif (y + 1 < self.mapSize[1] and garden[y+1][x] == "0"):
                     return "down"
                 else:
                     encircled = True
             else:
-                if (y + 1 < self.mapSize and garden[y+1][x] == "0"):
+                if (y + 1 < self.mapSize[1] and garden[y+1][x] == "0"):
                     return "down"
                 elif (y - 1 >= 0 and garden[y-1][x] == "0"):
                     return "up"
@@ -131,7 +131,7 @@ class Monk:
                     encircled = True
 
         # special corner turn situation
-        if (encircled and x in [0, self.mapSize - 1] and y in [0, self.mapSize - 1]):
+        if (encircled and x in [0, self.mapSize[0] - 1] and y in [0, self.mapSize[1] - 1]):
             return "cornerturn"
         else:
             return "encircled"
@@ -164,7 +164,7 @@ class Monk:
                 finished = True
 
             if (direction == "down"):
-                for y in range(y, self.mapSize, 1):
+                for y in range(y, self.mapSize[1], 1):
                     if (self.exploreDetailStepPrint): 
                         print(direction + ": " + str(y) + " " + str(x))
                     if (garden[y][x] == "0"):
@@ -203,7 +203,7 @@ class Monk:
                 finished = True
 
             if (direction == "right"):
-                for x in range(x, self.mapSize, 1):
+                for x in range(x, self.mapSize[0], 1):
                     if (self.exploreDetailStepPrint): 
                         print(direction + ": " + str(y) + " " + str(x))
                     if (garden[y][x] == "0"):
@@ -246,22 +246,22 @@ class Monk:
             if (self.exploreGardenStepPrint):
                 garden.print()
             # upper border
-            if (gene >= 0 and gene < self.mapSize):
+            if (gene >= 0 and gene < self.mapSize[0]):
                 success, steps, rotations = self._exploreSingle_(garden = garden.garden, x = gene, y = 0, direction = "down", turn = turns + 1, steps = steps, rotations = rotations)
 
             # right border
-            elif (gene >= self.mapSize and gene < self.mapSize * 2):
-                gene -= self.mapSize
-                success, steps, rotations = self._exploreSingle_(garden = garden.garden, x = self.mapSize - 1, y = gene, direction = "left", turn = turns + 1, steps = steps, rotations = rotations)
+            elif (gene >= self.mapSize[0] and gene < (self.mapSize[0] + self.mapSize[1])):
+                gene -= self.mapSize[0]
+                success, steps, rotations = self._exploreSingle_(garden = garden.garden, x = self.mapSize[0] - 1, y = gene, direction = "left", turn = turns + 1, steps = steps, rotations = rotations)
 
             # bottom border
-            elif (gene >= self.mapSize * 2 and gene < self.mapSize * 3):
-                gene -= self.mapSize * 2
-                success, steps, rotations = self._exploreSingle_(garden = garden.garden, x = gene, y = self.mapSize - 1, direction = "up", turn = turns + 1, steps = steps, rotations = rotations)
+            elif (gene >= (self.mapSize[0] + self.mapSize[1]) and gene < (self.mapSize[0] * 2 + self.mapSize[1])):
+                gene -= (self.mapSize[0] + self.mapSize[1])
+                success, steps, rotations = self._exploreSingle_(garden = garden.garden, x = gene, y = self.mapSize[1] - 1, direction = "up", turn = turns + 1, steps = steps, rotations = rotations)
 
             # left border
-            elif (gene >= self.mapSize * 3 and gene < self.mapSize * 4):
-                gene -= self.mapSize * 3
+            elif (gene >= (self.mapSize[0] * 2 + self.mapSize[1]) and gene < (self.mapSize[0] * 2 + self.mapSize[1] * 2)):
+                gene -= (self.mapSize[0] * 2 + self.mapSize[1])
                 success, steps, rotations = self._exploreSingle_(garden = garden.garden, x = 0, y = gene, direction = "right", turn = turns + 1, steps = steps, rotations = rotations)
 
             turns += 1 # round finished, add to counter
@@ -270,7 +270,7 @@ class Monk:
                 break
 
         # Assign fitness - only step count for now without rotations
-        fieldCount = self.mapSize * self.mapSize
+        fieldCount = self.mapSize[0] * self.mapSize[1]
         pebbleCount = garden.pebbleCount
         self.fitness = steps * weight + fieldCount - rotations
 

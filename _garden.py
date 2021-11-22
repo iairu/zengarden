@@ -10,8 +10,9 @@ class Garden:
                     count += 1
         return count
 
-    def __init__(self, side: int, garden: list, pebbleCount: int = -1):
-        self.side = side
+    def __init__(self, a: int, b: int, garden: list, pebbleCount: int = -1):
+        self.a = a
+        self.b = b
         self.garden = garden
         self.pebbleCount = self._getCount_("X") if (pebbleCount < 0) else pebbleCount
         
@@ -38,7 +39,7 @@ class Garden:
         return
 
 class GardenUtils:
-    def _generatePebblePositions_(side, pebblesChance: float = 0.33, maxPebbles: int = 3):
+    def _generatePebblePositions_(a, pebblesChance: float = 0.33, maxPebbles: int = 3):
         # pebble generation
         pebbles = []
 
@@ -51,24 +52,24 @@ class GardenUtils:
             pebbleCount = randint(1, maxPebbles)
             # give each pebble a unique position
             for pebble in range(pebbleCount):
-                pebblePos = randint(0, side - 1) # generate random position
+                pebblePos = randint(0, a - 1) # generate random position
                 while (pebblePos in pebbles): # guarantee unique position by finding next empty
-                    pebblePos = (pebblePos + 1) % side
+                    pebblePos = (pebblePos + 1) % a
                 pebbles.append(pebblePos)
 
         return pebbles
 
     # ---------------------------
 
-    def generate(side: int, pebblesInRowChance: float = 0.33, maxPebblesPerRow: int = 3):
-        garden = [["0"]*side for y in range(side)] 
+    def generate(a: int, b: int, pebblesInRowChance: float = 0.33, maxPebblesPerRow: int = 3):
+        garden = [["0"]*a for y in range(b)] 
         # array of strings = garden
-        for row in range(side): # string of chars = row
-            pebblePositions = GardenUtils._generatePebblePositions_(side, pebblesInRowChance, maxPebblesPerRow)
+        for row in range(b): # string of chars = row
+            pebblePositions = GardenUtils._generatePebblePositions_(a, pebblesInRowChance, maxPebblesPerRow)
             for col in pebblePositions: # char
                 garden[row][col] = "X"
 
-        return Garden(side, garden)
+        return Garden(a, b, garden)
 
     def copy(_garden: Garden):
         gardenCopy = []
@@ -78,7 +79,7 @@ class GardenUtils:
                 rowCopy.append(str(elm));
             gardenCopy.append(rowCopy)
         
-        return Garden(_garden.side, gardenCopy, _garden.pebbleCount)
+        return Garden(_garden.a, _garden.b, gardenCopy, _garden.pebbleCount)
 
     # ---------------------------
 
@@ -99,7 +100,8 @@ class GardenUtils:
             lines = f.readlines()
 
         garden = []
-        side = 0
+        a = 0
+        b = len(lines)
         for line in lines:
             row = []
             buffer = ""
@@ -111,7 +113,7 @@ class GardenUtils:
                     continue
                 else:
                     buffer += char
-            side = len(row)
+            a = len(row)
             garden.append(row)
 
-        return Garden(side, garden)
+        return Garden(a, b, garden)

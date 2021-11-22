@@ -5,10 +5,11 @@ from _monk import Monk
 def main():
     colorama.init() # make termcolor work on windows
 
-    garden = GardenUtils.load("map_samples/10/1")
+    size = [20, 5]
+    garden = GardenUtils.load("map_samples/" + str(size[0]) + "x" + str(size[1]) + "/1")
     # garden.print()
 
-    monk1 = Monk(10)
+    monk1 = Monk(size)
     monk1.printGenes()
 
     success, exploredGarden = monk1.explore(garden, gardenStepPrint = False, detailStepPrint = False, solutionPrint = True)
