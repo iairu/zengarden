@@ -1,23 +1,26 @@
 from __future__ import annotations
 from random import randint, random
 from termcolor import colored
+from _garden import Garden
 
 directionCount = 4
 
 class Monk:
 
     def _randomGenes_(self, idealistic: bool = True):
+        mapEntranceCount = self.mapSize * 4
+        
         # Entrance genes
         # A position on the border from which monk will enter the garden is determined in order of these genes
-        for option in range(self.mapEntranceCount):
+        for option in range(mapEntranceCount):
             # generate a random entrance point
-            entrance = randint(0, self.mapEntranceCount - 1)
+            entrance = randint(0, mapEntranceCount - 1)
 
             if (idealistic): 
                 # make each entrance point unique = more ideal, because there is no point entering twice from the same spot
                 # this won't remove collisions with exits but will give the monk a much better distribution of entrance points (will remove entrance collisions)
                 while (entrance in self.genes):
-                    entrance = (entrance + 1) % self.mapEntranceCount # look for next unused entrance
+                    entrance = (entrance + 1) % mapEntranceCount # look for next unused entrance
             self.genes.append(entrance)
 
         # Rotation genes
@@ -40,6 +43,7 @@ class Monk:
 
     # parent1 is prefered because its direction genes will be used
     def _crossMutate_(self, parent1: Monk, parent2: Monk, mutationChance: float = 0, crossPosition: int = 0):
+        mapEntranceCount = self.mapSize * 4
         genesLen = len(parent1.genes) # expectation that both parents have equivalent length genes
         
         # minimal position from which genes will be replaced with other parent
@@ -57,7 +61,7 @@ class Monk:
         if (random() >= mutationChance):
             pos = randint(0,genesLen - 1)
             # mutation within compatible values (different for directions), no correction for duplicates
-            newGenes[pos] = randint(0, self.mapEntranceCount) if (pos < genesLen - directionCount) else randint(0, directionCount)
+            newGenes[pos] = randint(0, mapEntranceCount) if (pos < genesLen - directionCount) else randint(0, directionCount)
             
         # new monk's birth
         self.genes = newGenes
@@ -65,31 +69,34 @@ class Monk:
 
     # ---------------------------
 
-    def __init__(self, mapEntranceCount_or_parent1: int | Monk, parent2: Monk | None = None, mutationChance: float = 0, crossPosition: int = 0) -> None:
-        self.mapEntranceCount = 0
+    def __init__(self, mapSize_or_parent1: int | Monk, parent2: Monk | None = None, mutationChance: float = 0, crossPosition: int = 0) -> None:
+        self.mapSize = 0
         self.genes = [] # mapEntranceCount * Entrance genes, 4 * Rotation genes
         self.fitness = 0 # exploration result
 
         # Determine how to generate this Monk's chromozome based on whether he has parents or not
-        if isinstance(mapEntranceCount_or_parent1, int):
+        if isinstance(mapSize_or_parent1, int):
             # first generation (no parents): use random gene values
-            self.mapEntranceCount = mapEntranceCount_or_parent1
+            self.mapSize = mapSize_or_parent1
             self._randomGenes_()
 
-        elif (isinstance(mapEntranceCount_or_parent1, Monk) and isinstance(parent2, Monk)):
-            parent1 = mapEntranceCount_or_parent1
-            self.mapEntranceCount = parent1.mapEntranceCount # assuming both parents are compatible with this map size
+        elif (isinstance(mapSize_or_parent1, Monk) and isinstance(parent2, Monk)):
+            parent1 = mapSize_or_parent1
+            self.mapSize = parent1.mapSize # assuming both parents are compatible with this map size
             self._crossMutate_(parent1, parent2, mutationChance, crossPosition)
 
         return
 
     # ---------------------------
 
-    def setFitness(self, fitness: int):
-        self.fitness = fitness
-        return
+    # def setFitness(self, fitness: int):
+    #     self.fitness = fitness
+    #     return
 
-    def printGenes(self, padding: int = 2, newLineEvery: int = 10): # color direction genes
+    def explore(_garden: Garden):
+        pass
+
+    def printGenes(self, newLineEvery: int = 10, padding: int = 2): # color direction genes
         directionGenesStart = len(self.genes) - directionCount
         out = ""
         for i, gene in enumerate(self.genes):

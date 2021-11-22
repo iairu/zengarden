@@ -6,14 +6,12 @@ def main():
     colorama.init() # make termcolor work on windows
 
     garden = GardenUtils.load("map_samples/10/1")
-    GardenUtils.print(garden)
+    garden.print()
 
-    entrances = 10*4
-
-    monk1 = Monk(entrances)
+    monk1 = Monk(10)
     monk1.printGenes()
 
-    monk2 = Monk(entrances)
+    monk2 = Monk(10)
     monk2.printGenes()
 
     monkNextGen = Monk(monk1, monk2)

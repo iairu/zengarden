@@ -1,37 +1,69 @@
 from random import randint, random
 from termcolor import colored
 
-def _generatePebblePositions_(side, pebblesChance: float = 0.33, maxPebbles: int = 3):
-    # pebble generation
-    pebbles = []
+class Garden:
+    def __init__(self, side: int, garden: list):
+        self.side = side
+        self.garden = garden
 
-    # pebblesChance: determine whether this round will even have any pebbles
-    generatePebbles = random() <= pebblesChance
+    def print(self):
+        # Available text colors:
+        colors = ["red", "green", "yellow", "blue", "magenta", "cyan", "white"]
+        colorlen = len(colors)
+        # Available text highlights:
+        # highlights = ["on_red", "on_green", "on_yellow", "on_blue", "on_magenta", "on_cyan", "on_white"]
+        # Available attributes:
+        # attributes = ["bold", "dark", "underline", "blink", "reverse", "concealed"]
 
-    # round will have pebbles:
-    if (generatePebbles):
-        # select 1 up to maxPebbles count of pebbles
-        pebbleCount = randint(1, maxPebbles)
-        # give each pebble a unique position
-        for pebble in range(pebbleCount):
-            pebblePos = randint(0, side - 1) # generate random position
-            while (pebblePos in pebbles): # guarantee unique position by finding next empty
-                pebblePos = (pebblePos + 1) % side
-            pebbles.append(pebblePos)
-
-    return pebbles
+        out = ""
+        for rowId, rowElms in enumerate(self.garden):
+            for elm in rowElms:
+                if (elm == "X"):
+                    out += colored(elm, "white", "on_white") 
+                else:
+                    out += colored(elm, colors[int(elm) % colorlen])
+                out += " "
+            out += "\n"
+        print(out)
+        return
 
 class GardenUtils:
+    def _generatePebblePositions_(side, pebblesChance: float = 0.33, maxPebbles: int = 3):
+        # pebble generation
+        pebbles = []
+
+        # pebblesChance: determine whether this round will even have any pebbles
+        generatePebbles = random() <= pebblesChance
+
+        # round will have pebbles:
+        if (generatePebbles):
+            # select 1 up to maxPebbles count of pebbles
+            pebbleCount = randint(1, maxPebbles)
+            # give each pebble a unique position
+            for pebble in range(pebbleCount):
+                pebblePos = randint(0, side - 1) # generate random position
+                while (pebblePos in pebbles): # guarantee unique position by finding next empty
+                    pebblePos = (pebblePos + 1) % side
+                pebbles.append(pebblePos)
+
+        return pebbles
+
+    # ---------------------------
+
     def generate(side: int, pebblesInRowChance: float = 0.33, maxPebblesPerRow: int = 3):
         garden = [["0"]*side for y in range(side)] 
         # array of strings = garden
         for row in range(side): # string of chars = row
-            pebblePositions = _generatePebblePositions_(side, pebblesInRowChance, maxPebblesPerRow)
+            pebblePositions = GardenUtils._generatePebblePositions_(side, pebblesInRowChance, maxPebblesPerRow)
             for col in pebblePositions: # char
                 garden[row][col] = "X"
-        return garden
 
-    def save(garden: list, path: str):
+        return Garden(side, garden)
+
+    # ---------------------------
+
+    def save(_garden: Garden, path: str):
+        garden = _garden.garden
         out = ""
         for rowId, rowElms in enumerate(garden):
             for elm in rowElms:
@@ -47,6 +79,7 @@ class GardenUtils:
             lines = f.readlines()
 
         garden = []
+        side = 0
         for line in lines:
             row = []
             buffer = ""
@@ -58,27 +91,7 @@ class GardenUtils:
                     continue
                 else:
                     buffer += char
+            side = len(row)
             garden.append(row)
 
-        return garden
-
-    def print(garden: list):
-        # Available text colors:
-        colors = ["red", "green", "yellow", "blue", "magenta", "cyan", "white"]
-        colorlen = len(colors)
-        # Available text highlights:
-        # highlights = ["on_red", "on_green", "on_yellow", "on_blue", "on_magenta", "on_cyan", "on_white"]
-        # Available attributes:
-        # attributes = ["bold", "dark", "underline", "blink", "reverse", "concealed"]
-
-        out = ""
-        for rowId, rowElms in enumerate(garden):
-            for elm in rowElms:
-                if (elm == "X"):
-                    out += colored(elm, "white", "on_white") 
-                else:
-                    out += colored(elm, colors[int(elm) % colorlen])
-                out += " "
-            out += "\n"
-        print(out)
-        return
+        return Garden(side, garden)
