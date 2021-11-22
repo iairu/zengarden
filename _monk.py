@@ -64,7 +64,7 @@ class Monk:
 
     # ---------------------------
 
-    def __init__(self, mapSize_or_parent1: int | Monk, parent2: Monk | None = None, mutationChance: float = 0, crossPosition: int = 0) -> None:
+    def __init__(self, mapSize_or_parent1: int | Monk, parent2: Monk | None = None, mutationChance: float = 0, crossPosition: int = 0, idealisticGenes: bool = True) -> None:
         self.mapSize = [0, 0]
         self.mapEntranceCount = 0
         self.genes = [] # mapEntranceCount * Entrance genes, 4 * Rotation genes
@@ -274,6 +274,10 @@ class Monk:
         pebbleCount = garden.pebbleCount
         self.fitness = steps * weight + fieldCount - rotations
 
+        # Final garden state print
+        if (gardenStepPrint): 
+            garden.print()
+
         # Solution printing
         if (solutionPrint):
             if (success):
@@ -304,3 +308,6 @@ class Monk:
                 out += "\n"
 
         print(out)
+
+    def __gt__(self, other: Monk): # sorting for evolution after elitism calculation
+        return self.fitness < other.fitness
