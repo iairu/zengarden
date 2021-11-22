@@ -16,8 +16,8 @@ def main():
     monk2 = Monk(entrances)
     monk2.printGenes()
 
-    # monkNextGen = Monk(monk1, monk2)
-    # monkNextGen.printGenes()
+    monkNextGen = Monk(monk1, monk2)
+    monkNextGen.printGenes()
 
     return
 
