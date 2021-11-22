@@ -62,7 +62,50 @@ class Evolution:
 
         return
 
-    def evolve(self):
+    def tabuSearch(self, population, cbPos: int = 1, maxLoop: int = 3, maxTabuListSize: int = 10):
+        poplen = len(population)
+
+        searchBest: Monk = population[cbPos]
+        candidateBest: Monk = population[cbPos]
+
+        tabuList = []
+        tabuList.append(population[cbPos])
+
+        i = 0
+        while(i < maxLoop):
+
+            # neighbors and borders
+            if (cbPos == 0):
+                searchHood = population[cbPos : cbPos + 2]
+            elif (cbPos == poplen - 1):
+                searchHood = population[cbPos - 1: cbPos + 1]
+            else:
+                searchHood = population[cbPos - 1: cbPos + 2]
+
+            candidateBest: Monk = searchHood[0] # purposefully move best candidate: this guarantees that local extremes won't get weighed heavily
+            
+            i = cbPos - 2
+            for searchCandidate in searchHood:
+                i += 1 # i of given searchCandidate
+                # find a possibly worse best candidate than the one we put in tabuList
+                # the first condition here guarantees even more that local extremes won't get weighed heavily
+                if (not (searchCandidate in tabuList)) and isinstance(searchCandidate, Monk) and (searchCandidate.fitness > candidateBest.fitness):
+                    candidateBest = searchCandidate
+                    cbPos = i # to be able to get neigbors we need new best candidate's proper position
+            
+            # now that we handled local extremes, lets handle who is a better monk
+            if (candidateBest.fitness > searchBest.fitness):
+                searchBest = candidateBest
+
+            # guarantee that we won't cause duplicates
+            tabuList.append(candidateBest)
+            if (len(tabuList) > maxTabuListSize):
+                tabuList.pop(0)
+
+            i += 1
+        return searchBest # the best monk found in the given loops wins
+
+    def evolve(self, clampInsteadOfTabu: bool = False):
         newPopulation = []
         self.generation += 1
 
@@ -89,16 +132,18 @@ class Evolution:
         # print(oldlen)
         # print(newlen)
 
-        # Idea 2: Too many children, some shall die to a deadly virus
-        clamp = (newlen / 100) * oldlen
-        if (clamp > 1.0):
-            f = clamp
-            while (f < newlen):
-                newPopulation[floor(f)] = None # use None value because direct pop causes values to move
-                f += clamp
-            for monk in newPopulation:
-                if (monk == None):
-                    newPopulation.remove(monk)
+        # # Idea 2: Too many children, some shall die to a deadly virus
+        if (clampInsteadOfTabu):
+            clamp = (newlen / 100) * oldlen
+            if (clamp > 1.0):
+                f = clamp
+                while (f < newlen):
+                    newPopulation[floor(f)] = None # use None value because direct pop causes values to move
+                    f += clamp
+                for monk in newPopulation:
+                    if (monk == None):
+                        newPopulation.remove(monk)
+
 
         # Calculate fitness for the whole generation, even though there are likely more than needed, the weakest shall die
         maxFitnessInPop = 0
@@ -115,6 +160,21 @@ class Evolution:
                 if (monk.fitness > maxFitnessInPop):
                     maxFitnessInPop = monk.fitness
 
+
+        # do tabu stuff to deal with extremes
+        if (not clampInsteadOfTabu):
+            while (len(newPopulation) > oldlen + 3):
+                idealMonk = self.tabuSearch(newPopulation)
+                idealPos = newPopulation.index(idealMonk)
+                if (idealPos == 0):
+                    newPopulation.pop(idealPos + 1)
+                elif (idealPos == len(newPopulation) - 1):
+                    newPopulation.pop(idealPos - 1)
+                else:
+                    newPopulation.pop(idealPos - 1)
+                    newPopulation.pop(idealPos + 1)
+
+
         # apply elitism value , sort the generated population
         if (self.elitismFitnessRecalcPrint): eflog += "\nEFR After:"
         for monk in newPopulation:
@@ -128,8 +188,10 @@ class Evolution:
         # remove weakest links to maintain population count
         newPopulation = newPopulation[0 : oldlen]
 
+
         # replace old generation
         self.population = newPopulation
+
 
     def successPrint(self, onlySuccessLevel: int = 1):
         lastgeneration = 0
@@ -158,8 +220,3 @@ class Evolution:
 
         print("Succeeded " + str(self.successCount) + " times in total within " + str(self.generation) + " generations.")
         print("From that, success level " + str(onlySuccessLevel) + " has occured " + str(perLevelSuccessCounter) + " times.")
-
-    # ---------------------------
-
-    def tabuSearch():
-        pass
