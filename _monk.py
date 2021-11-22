@@ -10,15 +10,15 @@ class Monk:
     def _randomGenes_(self, idealistic: bool = True):
         # Entrance genes
         # A position on the border from which monk will enter the garden is determined in order of these genes
-        for option in range(self.mapEntranceCount):
+        for option in range(int(self.mapEntranceCount / 2)):
             # generate a random entrance point
-            entrance = randint(0, self.mapEntranceCount - 1)
+            entrance = randint(-(int(self.mapEntranceCount / 2)), int(self.mapEntranceCount / 2))
 
             if (idealistic): 
                 # make each entrance point unique = more ideal, because there is no point entering twice from the same spot
                 # this won't remove collisions with exits but will give the monk a much better distribution of entrance points (will remove entrance collisions)
                 while (entrance in self.genes):
-                    entrance = (entrance + 1) % self.mapEntranceCount # look for next unused entrance
+                    entrance = ((entrance + 1) % self.mapEntranceCount) - (int(self.mapEntranceCount / 2)) # look for next unused entrance
             self.genes.append(entrance)
 
         # Rotation genes
@@ -56,7 +56,7 @@ class Monk:
         if (random() >= mutationChance):
             pos = randint(0,genesLen - 1)
             # mutation within compatible values (different for directions), no correction for duplicates
-            newGenes[pos] = randint(0, self.mapEntranceCount) if (pos < genesLen - directionCount) else randint(0, directionCount)
+            newGenes[pos] = randint(0, int(self.mapEntranceCount / 2)) if (pos < genesLen - directionCount) else randint(0, directionCount)
             
         # new monk's birth
         self.genes = newGenes
@@ -94,8 +94,8 @@ class Monk:
     # ---------------------------
 
     def _findPassableDirection_(self, garden: list, x: int, y: int, prevDirection: str) -> str:
-        leftBeforeRight: bool = self.genes[self.mapEntranceCount] >= self.genes[self.mapEntranceCount + 1] # L, R genes
-        upBeforeDown: bool = self.genes[self.mapEntranceCount + 2] >= self.genes[self.mapEntranceCount + 3] # U, D genes
+        leftBeforeRight: bool = self.genes[int(self.mapEntranceCount / 2)] >= self.genes[int(self.mapEntranceCount / 2) + 1] # L, R genes
+        upBeforeDown: bool = self.genes[int(self.mapEntranceCount / 2) + 2] >= self.genes[int(self.mapEntranceCount / 2) + 3] # U, D genes
         encircled = False
 
         if (prevDirection == "up" or prevDirection == "down"):
@@ -242,7 +242,7 @@ class Monk:
         success = True
 
         garden = GardenUtils.copy(_garden)
-        for gene in self.genes[0 : len(self.genes) - 4]:
+        for gene in self.genes[0 : len(self.genes) - directionCount]:
             if (self.exploreGardenStepPrint):
                 garden.print()
             # upper border
@@ -255,13 +255,13 @@ class Monk:
                 success, steps, rotations = self._exploreSingle_(garden = garden.garden, x = self.mapSize[0] - 1, y = gene, direction = "left", turn = turns + 1, steps = steps, rotations = rotations)
 
             # bottom border
-            elif (gene >= (self.mapSize[0] + self.mapSize[1]) and gene < (self.mapSize[0] * 2 + self.mapSize[1])):
-                gene -= (self.mapSize[0] + self.mapSize[1])
+            elif (gene >= -self.mapSize[0] and gene < 0):
+                gene += self.mapSize[0] - 1
                 success, steps, rotations = self._exploreSingle_(garden = garden.garden, x = gene, y = self.mapSize[1] - 1, direction = "up", turn = turns + 1, steps = steps, rotations = rotations)
 
             # left border
-            elif (gene >= (self.mapSize[0] * 2 + self.mapSize[1]) and gene < (self.mapSize[0] * 2 + self.mapSize[1] * 2)):
-                gene -= (self.mapSize[0] * 2 + self.mapSize[1])
+            elif (gene > -(self.mapSize[0] + self.mapSize[1]) and gene < -self.mapSize[0]):
+                gene += self.mapSize[0] - 1 + self.mapSize[1] - 1
                 success, steps, rotations = self._exploreSingle_(garden = garden.garden, x = 0, y = gene, direction = "right", turn = turns + 1, steps = steps, rotations = rotations)
 
             turns += 1 # round finished, add to counter
